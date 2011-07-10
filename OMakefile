@@ -9,6 +9,7 @@ FILES[] =
   seq_t
   seq_j
   seq
+  vote
 
 Atdgen(seq, $(EMPTY))
 OCamlLibrary(action, $(FILES))
