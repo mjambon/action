@@ -1,7 +1,7 @@
 (* Range voting *)
 
 val create : int -> float array
-val reset : float array -> unit
+val clear : float array -> unit
 
 type slice = {
   offset : int;
@@ -9,4 +9,4 @@ type slice = {
 }
 
 val vote : float array -> slice -> unit
-val choose : 'a array -> int
+val choose : float array -> int

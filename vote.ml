@@ -6,7 +6,7 @@ type slice = {
 
 let create len = Array.make len 0.0
 
-let reset a =
+let clear a =
   for i = 0 to Array.length a - 1 do
     a.(i) <- 0.0
   done

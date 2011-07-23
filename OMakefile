@@ -13,9 +13,9 @@ FILES[] =
 
 Atdgen(seq, $(EMPTY))
 OCamlLibrary(action, $(FILES))
-OCamlProgram(action, $(FILES) main)
+OCamlProgram(randomtask, $(FILES) main)
 
-.DEFAULT: action.cma action.cmxa action.opt
+.DEFAULT: action.cma action.cmxa randomtask.opt
 
 .PHONY: clean
 clean:
