@@ -39,6 +39,6 @@ val atom : time -> name -> (time -> float) -> wave
 val seq : ?pause:time -> wave -> wave -> wave
 val add : ?delay:time -> wave -> wave -> wave
 val sx : float -> wave -> wave
-val sy : float -> wave -> wave
+val sy : y_modifier -> wave -> wave
 
 val eval : wave -> time -> float

@@ -52,7 +52,7 @@ let sx r w =
   else
     Sx (r *. length w, r, w)
 
-let sy m w = Sx (length w, m, w)
+let sy m w = Sy (length w, m, w)
 
 let rec eval w t =
   if not (t >= 0.) then
