@@ -1,3 +1,5 @@
+open Printf
+
 type name = string
 type time = float
 
@@ -50,7 +52,7 @@ let sx r w =
   if not (r >= 0.) then
     invalid_arg "Snd_gen.sx"
   else
-    Sx (r *. length w, r, w)
+    Sx (length w /. r, r, w)
 
 let sy m w = Sy (length w, m, w)
 
@@ -93,3 +95,20 @@ let rec eval w t =
                    else
                      f (t /. dt) *. x
             )
+
+let pi = acos (-1.)
+let twopi = 2. *. pi
+
+let sin440 t =
+  sin (440. *. twopi *. t)
+
+let w_sin440 = atom 1. "sin440" sin440
+let w_sin880 = sx 2. (seq w_sin440 w_sin440)
+
+let wedge = Rel ("wedge", (fun x -> 1. -. 2. *. abs_float (x -. 0.5)))
+
+let w = seq ~pause:1. (sy wedge w_sin440) (sy wedge w_sin880)
+
+let test () =
+  Snd_wav.save_wav "test.wav" (length w) (eval w);
+  ignore (Sys.command "time aplay test.wav")

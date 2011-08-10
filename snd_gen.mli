@@ -42,3 +42,5 @@ val sx : float -> wave -> wave
 val sy : y_modifier -> wave -> wave
 
 val eval : wave -> time -> float
+
+val test : unit -> unit

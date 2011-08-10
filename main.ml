@@ -1,1 +1,2 @@
-let () = Seq.test ()
+let () = Snd_gen.test ()
+

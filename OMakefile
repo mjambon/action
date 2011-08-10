@@ -6,6 +6,7 @@ OCAMLPACKS = atdgen
 OCAMLFLAGS = -annot -g
 
 FILES[] =
+  snd_wav
   snd_gen
   seq_t
   seq_j
