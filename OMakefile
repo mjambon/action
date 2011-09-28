@@ -9,6 +9,7 @@ FILES[] =
   snd_wav
   snd_gen
   tristate
+  picker
   seq_t
   seq_j
   seq
