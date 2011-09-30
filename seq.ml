@@ -1,47 +1,79 @@
 open Printf
 
+module Z = Lazylist
+
 type 'a seq =
-    Atom
+    Atom of (string * (unit -> unit))
   | Seq of ('a * 'a)
 
 type action = {
-  action_name : string option;
-  action_length : int;
-  action_seq : action seq;
-  action_func : (unit -> unit) option;
+  ac_seq : action seq;
+  ac_length : int;
+  ac_hash : int;
 }
 
 type action_base = action array
 
-let seq a b =
-  {
-    action_name = None;
-    action_length = a.action_length + b.action_length;
-    action_seq = Seq (a, b);
-    action_func = None;
-  }
+let rec fold_left f acc x =
+  match x.ac_seq with
+      Atom (s, _) -> f acc s
+    | Seq (a, b) ->
+        let acc = fold_left f acc a in
+        fold_left f acc b
 
-let rec flatten x tl =
-  match x.action_name, x.action_seq with
-      Some s, _ -> s :: tl
-    | None, Seq (a, b) ->
-        let bl = flatten b tl in
-        flatten a bl
-    | None, Atom ->
-        assert false
+let rec fold_right f x acc =
+  match x.ac_seq with
+      Atom (s, _) -> f s acc
+    | Seq (a, b) ->
+        let acc = fold_right f b acc in
+        fold_right f a acc
+
+
+let flatten x = fold_right (fun s acc -> s :: acc) x []
+
+let iter f x = fold_left (fun () s -> f s) () x
+
+let rec to_lazylist_aux x tail =
+  match x.ac_seq with
+      Atom (s, _) -> Z.Cell (s, tail)
+    | Seq (a, b) ->
+        let tail = lazy (to_lazylist_aux b tail) in
+        to_lazylist_aux a tail
+
+let to_lazylist x = lazy (to_lazylist_aux x Z.empty)
+
+let compare a b =
+  Lazylist.compare String.compare (to_lazylist a) (to_lazylist b)
+
+let hash x =
+  Lazylist.hash Hashtbl.hash (to_lazylist x)
+
+let atom s f =
+  let incomplete = {
+    ac_seq = Atom (s, f);
+    ac_length = 1;
+    ac_hash = 0;
+  }
+  in
+  { incomplete with ac_hash = hash incomplete }
+
+let seq a b =
+  let incomplete = {
+    ac_seq = Seq (a, b);
+    ac_length = a.ac_length + b.ac_length;
+    ac_hash = 0;
+  }
+  in
+  { incomplete with ac_hash = hash incomplete }
+
 
 let print_seq x =
-  let l = flatten x [] in
+  let l = flatten x in
   print_string (Yojson.Safe.prettify (Seq_j.string_of_string_list l))
 
 let test () =
   let mk name =
-    {
-      action_name = Some name;
-      action_length = 1;
-      action_seq = Atom;
-      action_func = Some (fun () -> printf "%s\n" name);
-    }
+    atom name (fun () -> printf "%s\n" name)
   in
   let a = [| mk "up"; mk "down"; mk "left"; mk "right"; mk "nop" |] in
   let x = seq (seq a.(0) a.(0)) a.(1) in

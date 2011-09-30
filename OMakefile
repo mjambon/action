@@ -8,6 +8,7 @@ OCAMLFLAGS = -annot -g
 FILES[] =
   snd_wav
   snd_gen
+  lazylist
   tristate
   picker
   seq_t
