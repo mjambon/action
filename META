@@ -1,0 +1,4 @@
+name = "action"
+requires = "atdgen"
+archive(byte) = "action.cma"
+archive(native) = "action.cmxa"

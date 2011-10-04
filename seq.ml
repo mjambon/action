@@ -2,12 +2,13 @@ open Printf
 
 module Z = Lazylist
 
-type 'a seq =
+type seq =
     Atom of (string * (unit -> unit))
-  | Seq of ('a * 'a)
+  | Seq of (action * action)
 
-type action = {
-  ac_seq : action seq;
+and action = {
+  ac_id : int;
+  ac_seq : seq;
   ac_length : int;
   ac_hash : int;
 }
@@ -45,26 +46,44 @@ let to_lazylist x = lazy (to_lazylist_aux x Z.empty)
 let compare a b =
   Lazylist.compare String.compare (to_lazylist a) (to_lazylist b)
 
-let hash x =
+let really_hash x =
   Lazylist.hash Hashtbl.hash (to_lazylist x)
+
+let hash x = x.ac_hash
+
+let equal a b =
+  a.ac_hash = b.ac_hash && compare a b = 0
+
+let unique_id =
+  let n = ref 0 in
+  fun () ->
+    let i = !n in
+    if i < 0 then
+      failwith "Seq.unique_id overflow"
+    else (
+      incr n;
+      i
+    )
 
 let atom s f =
   let incomplete = {
+    ac_id = unique_id ();
     ac_seq = Atom (s, f);
     ac_length = 1;
     ac_hash = 0;
   }
   in
-  { incomplete with ac_hash = hash incomplete }
+  { incomplete with ac_hash = really_hash incomplete }
 
 let seq a b =
   let incomplete = {
+    ac_id = unique_id ();
     ac_seq = Seq (a, b);
     ac_length = a.ac_length + b.ac_length;
     ac_hash = 0;
   }
   in
-  { incomplete with ac_hash = hash incomplete }
+  { incomplete with ac_hash = really_hash incomplete }
 
 
 let print_seq x =
@@ -79,4 +98,16 @@ let test () =
   let x = seq (seq a.(0) a.(0)) a.(1) in
   let y = seq x x in
   print_seq y;
-  print_newline ()
+  print_newline ();
+
+  let all = Picker.create 100 in
+  List.iter (fun x -> Picker.replace all x.ac_id x)
+    ([ x; y ] @ Array.to_list a);
+  for i = 1 to 20 do
+    printf "[%i] " i;
+    match Picker.pick all with
+        None -> assert false
+      | Some (k, v) ->
+          printf "#%i " k; print_seq v;
+          print_string "\n";
+  done
