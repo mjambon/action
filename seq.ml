@@ -9,6 +9,7 @@ type seq =
 and action = {
   ac_id : int;
   ac_seq : seq;
+  ac_score : int ref;
   ac_length : int;
   ac_hash : int;
 }
@@ -69,6 +70,7 @@ let atom s f =
   let incomplete = {
     ac_id = unique_id ();
     ac_seq = Atom (s, f);
+    ac_score = ref 0;
     ac_length = 1;
     ac_hash = 0;
   }
@@ -79,6 +81,7 @@ let seq a b =
   let incomplete = {
     ac_id = unique_id ();
     ac_seq = Seq (a, b);
+    ac_score = ref 0;
     ac_length = a.ac_length + b.ac_length;
     ac_hash = 0;
   }

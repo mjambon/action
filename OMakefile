@@ -14,7 +14,9 @@ FILES[] =
   seq_t
   seq_j
   seq
+  timer
   vote
+  loop
 
 Atdgen(seq, $(EMPTY))
 OCamlLibrary(action, $(FILES))

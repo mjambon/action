@@ -6,6 +6,7 @@ type seq = private
 and action = private {
   ac_id : int; (* unique node ID *)
   ac_seq : seq; (* node or leaf *)
+  ac_score : int ref; (* score based on global feedback *)
   ac_length : int; (* precomputed sequence length *)
   ac_hash : int; (* precomputed sequence hash *)
 }
