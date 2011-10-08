@@ -2,7 +2,7 @@ USE_OCAMLFIND = true
 BYTE_ENABLED = true
 OCAMLDEP_MODULES_ENABLED = false
 
-OCAMLPACKS = atdgen
+OCAMLPACKS = atdgen unix
 OCAMLFLAGS = -annot -g
 
 FILES[] =

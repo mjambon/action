@@ -1,3 +1,5 @@
+open Printf
+
 type 'a box = {
   mutable remaining : int;
   mutable expiring_elements : 'a list;
@@ -19,7 +21,9 @@ let count x = x.item_count
 (*
   Find a box where the time tb remaining for that box is such that:
 
-    tb <= time_remaining < 2 * tb
+    tb <= time_remaining < 4 * tb
+
+  Note: the constant 4 seems to result in slightly better performance than 2.
 *)
 let rec insert boxes time_remaining x =
   match boxes with
@@ -39,7 +43,7 @@ let rec insert boxes time_remaining x =
             expiring_elements = [x];
             other_elements = [];
           } :: boxes
-        else if time_remaining < 2 * tb then (
+        else if time_remaining < 4 * tb then (
           if time_remaining = tb then
             b.expiring_elements <- x :: b.expiring_elements
           else
@@ -105,7 +109,7 @@ let tick timer =
     []
 
 
-let test () =
+let test1 () =
   let timer = create () in
   put timer 1 "1";
   assert (tick timer = ["1"]);
@@ -140,6 +144,52 @@ let test () =
   assert (tick timer = []);
 
   timer
+
+let test2 () =
+  let timer = create () in
+  let n = 100_000 in
+  let got_back = Array.make n false in
+  let simulated_decr = ref 0 in
+  let actual_decr = ref 0 in
+  let niter = n + truncate (2.**16.) in
+  for i = 0 to niter - 1 do
+    if i < n then
+      put timer (truncate (2.**(8. +. Random.float 8.))) i;
+
+    simulated_decr := !simulated_decr + timer.item_count;
+    actual_decr := !actual_decr + List.length timer.boxes;
+
+    let out = tick timer in
+    List.iter (
+      fun i ->
+        assert (not got_back.(i));
+        got_back.(i) <- true
+    ) out
+  done;
+  assert (timer.item_count = 0);
+  assert (got_back = Array.make n true);
+
+  let average_item_count = float !simulated_decr /. float niter in
+  let average_box_count = float !actual_decr /. float niter in
+  printf "average item count: %.2f\n" average_item_count;
+  printf "average box count: %.2f\n" average_box_count;
+  printf "simulated ticks: %i, actual ticks: %i, ratio: %.2f\n"
+    !simulated_decr !actual_decr
+    (float !simulated_decr /. float !actual_decr);
+
+  timer
+
+
+let time f x =
+  let t1 = Unix.gettimeofday () in
+  let y = f x in
+  let t2 = Unix.gettimeofday () in
+  printf "%.3fs\n" (t2 -. t1);
+  y
+
+let test () =
+  ignore (test1 ());
+  ignore (time test2 ())
 ;;
 (*
 test ()
