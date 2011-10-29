@@ -83,6 +83,21 @@ let pick p =
   else
     a.(Random.int n)
 
+let fold f p acc =
+  let a = p.p_ext.ext_ar in
+  let len = p.p_ext.ext_count in
+  assert (len <= Array.length a);
+  let acc = ref acc in
+  for i = 0 to len - 1 do
+    match a.(i) with
+        None -> assert false
+      | Some (k, v) -> acc := f k v !acc
+  done;
+  !acc
+
+let iter f p =
+  fold (fun k v acc -> f k v) p ()
+
 
 let test () =
   let p = create 0 in
@@ -94,6 +109,7 @@ let test () =
     ignore (pick p)
   done;
   replace p "a" 3;
+  iter (fun s n -> printf "(%S, %i)\n" s n) p;
   for i = 1 to 20 do
     match pick p with
         Some ("a", 3) -> ()
