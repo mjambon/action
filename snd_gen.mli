@@ -43,4 +43,11 @@ val sy : y_modifier -> wave -> wave
 
 val eval : wave -> time -> float
 
+val play : wave -> unit
+
 val test : unit -> unit
+
+(* Basic signals *)
+val wedge : y_modifier
+val sine : float -> time -> float
+  (* [sine freq duration] *)

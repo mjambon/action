@@ -3,7 +3,7 @@ open Printf
 module Z = Lazylist
 
 type seq =
-    Atom of (string * (unit -> unit))
+    Atom of string
   | Seq of (action * action)
 
 and action = {
@@ -12,20 +12,21 @@ and action = {
   ac_score : int ref;
   ac_length : int;
   ac_hash : int;
+  ac_exec : (action -> unit);
 }
 
 type action_base = action array
 
 let rec fold_left f acc x =
   match x.ac_seq with
-      Atom (s, _) -> f acc s
+      Atom s -> f acc s
     | Seq (a, b) ->
         let acc = fold_left f acc a in
         fold_left f acc b
 
 let rec fold_right f x acc =
   match x.ac_seq with
-      Atom (s, _) -> f s acc
+      Atom s -> f s acc
     | Seq (a, b) ->
         let acc = fold_right f b acc in
         fold_right f a acc
@@ -37,7 +38,7 @@ let iter f x = fold_left (fun () s -> f s) () x
 
 let rec to_lazylist_aux x tail =
   match x.ac_seq with
-      Atom (s, _) -> Z.Cell (s, tail)
+      Atom s -> Z.Cell (s, tail)
     | Seq (a, b) ->
         let tail = lazy (to_lazylist_aux b tail) in
         to_lazylist_aux a tail
@@ -69,21 +70,23 @@ let unique_id =
 let atom s f =
   let incomplete = {
     ac_id = unique_id ();
-    ac_seq = Atom (s, f);
+    ac_seq = Atom s;
     ac_score = ref 0;
     ac_length = 1;
     ac_hash = 0;
+    ac_exec = f;
   }
   in
   { incomplete with ac_hash = really_hash incomplete }
 
-let seq a b =
+let seq ?exec a b =
   let incomplete = {
     ac_id = unique_id ();
     ac_seq = Seq (a, b);
     ac_score = ref 0;
     ac_length = a.ac_length + b.ac_length;
     ac_hash = 0;
+    ac_exec = (match exec with None -> a.ac_exec | Some f -> f);
   }
   in
   { incomplete with ac_hash = really_hash incomplete }
@@ -94,9 +97,7 @@ let print_seq x =
   print_string (Yojson.Safe.prettify (Seq_j.string_of_string_list l))
 
 let test () =
-  let mk name =
-    atom name (fun () -> printf "%s\n" name)
-  in
+  let mk name = atom name print_seq in
   let a = [| mk "up"; mk "down"; mk "left"; mk "right"; mk "nop" |] in
   let x = seq (seq a.(0) a.(0)) a.(1) in
   let y = seq x x in

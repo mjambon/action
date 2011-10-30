@@ -99,8 +99,10 @@ let rec eval w t =
 let pi = acos (-1.)
 let twopi = 2. *. pi
 
-let sin440 t =
-  sin (440. *. twopi *. t)
+let sine freq t =
+  sin (freq *. twopi *. t)
+
+let sin440 = sine 440.
 
 let w_sin440 = atom 1. "sin440" sin440
 let w_sin880 = sx 2. (seq w_sin440 w_sin440)
@@ -109,6 +111,10 @@ let wedge = Rel ("wedge", (fun x -> 1. -. 2. *. abs_float (x -. 0.5)))
 
 let w = seq ~pause:1. (sy wedge w_sin440) (sy wedge w_sin880)
 
-let test () =
-  Snd_wav.save_wav "test.wav" (length w) (eval w);
+let play x =
+  let fname = "/dev/shm/randomtask_sound.wav" in
+  Snd_wav.save_wav fname (length x) (eval x);
   ignore (Sys.command "time aplay test.wav")
+
+let test () = play w
+
