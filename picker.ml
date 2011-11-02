@@ -54,6 +54,9 @@ let get p k =
   try Some (fst (Hashtbl.find p.p_tbl k))
   with Not_found -> None
 
+let mem p k =
+  Hashtbl.mem p.p_tbl k
+
 let remove p k =
   try
     let v, i = Hashtbl.find p.p_tbl k in
