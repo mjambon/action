@@ -7,9 +7,9 @@ let base_notes =
   Array.to_list (
     Array.init 8 (
       fun i ->
-        let freq = 440. *. (1. +. log (float i) /. log 8.) in
-        let name = sprintf "%.1f Hz" freq in
-        (name ^ " wedge"), sy wedge (atom 0.25 name (sine freq))
+        let freq = 440. *. (1. +. log (float (i + 1)) /. log 8.) in
+        let name = sprintf "%.1fHz" freq in
+        name, sy wedge (atom 0.25 name (sine freq))
     )
   )
 
@@ -33,6 +33,8 @@ let rec seq_list l =
 
 let exec x =
   let l = Seq.flatten x in
+  List.iter (fun s -> printf "%s " s) l;
+  print_newline ();
   let sample = seq_list l in
   Snd_gen.play sample
 

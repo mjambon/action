@@ -114,7 +114,7 @@ let w = seq ~pause:1. (sy wedge w_sin440) (sy wedge w_sin880)
 let play x =
   let fname = "/dev/shm/randomtask_sound.wav" in
   Snd_wav.save_wav fname (length x) (eval x);
-  ignore (Sys.command "time aplay test.wav")
+  ignore (Sys.command (sprintf "aplay %s 2>/dev/null" fname))
 
 let test () = play w
 

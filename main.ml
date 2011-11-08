@@ -1,2 +1,3 @@
-let () = Snd_gen.test ()
+let () = Loop.run ()
+
 
