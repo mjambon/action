@@ -13,6 +13,7 @@ and action = {
   ac_seq : seq;
   ac_score : int ref;
   ac_lowest_score : int ref;
+  ac_boost_count : int ref;
   ac_length : int;
   ac_hash : int;
   ac_exec : (action -> unit);
@@ -76,6 +77,7 @@ let atom s f =
     ac_seq = Atom s;
     ac_score = ref 0;
     ac_lowest_score = ref initial_lowest_score;
+    ac_boost_count = ref 0;
     ac_length = 1;
     ac_hash = 0;
     ac_exec = f;
@@ -89,6 +91,7 @@ let seq ?exec a b =
     ac_seq = Seq (a, b);
     ac_score = ref 0;
     ac_lowest_score = ref initial_lowest_score;
+    ac_boost_count = ref 0;
     ac_length = a.ac_length + b.ac_length;
     ac_hash = 0;
     ac_exec = (match exec with None -> a.ac_exec | Some f -> f);

@@ -8,6 +8,7 @@ and action = private {
   ac_seq : seq; (* node or leaf *)
   ac_score : int ref; (* score based on global feedback *)
   ac_lowest_score : int ref; (* negative *)
+  ac_boost_count : int ref; (* number of times it got positive feedback *)
   ac_length : int; (* precomputed sequence length *)
   ac_hash : int; (* precomputed sequence hash *)
   ac_exec : (action -> unit);

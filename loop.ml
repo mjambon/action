@@ -87,10 +87,12 @@ let loop { all_actions; active_actions; disabled_actions } =
   (match Picker.pick active_actions, Picker.pick active_actions with
        Some (_, a1), Some (_, a2) ->
          let a3 = Seq.seq a1 a2 in
-         if not (Action_tbl.mem all_actions a3) then (
-           Action_tbl.add all_actions a3 ();
-           Picker.replace active_actions a3.ac_id a3;
-         );
+         if !(a1.ac_boost_count) > 0 
+           && !(a2.ac_boost_count) > 0
+           && not (Action_tbl.mem all_actions a3) then (
+             Action_tbl.add all_actions a3 ();
+             Picker.replace active_actions a3.ac_id a3;
+           )
      | _ -> ()
   );
   
@@ -109,6 +111,7 @@ let loop { all_actions; active_actions; disabled_actions } =
           | Some true ->
               let score = prev_score + 100 in
               x.ac_score := score;
+              incr x.ac_boost_count;
               printf "%i [up]\n%!" score;
           | Some false ->
               let score = prev_score / 2 in
