@@ -1,0 +1,23 @@
+OCAMLPACKS = atdgen unix
+OCAMLINCLUDES += ../datastruct
+OCAML_LIBS[] += ../datastruct/datastruct
+
+FILES[] =
+  snd_wav
+  snd_gen
+  snd_base
+  lazylist
+  seq_t
+  seq_j
+  seq
+  loop
+
+Atdgen(seq, $(EMPTY))
+OCamlLibrary(actions, $(FILES))
+OCamlProgram(randomtask, $(FILES) main)
+
+.DEFAULT: actions.cma actions.cmxa randomtask.opt
+
+.PHONY: clean
+clean:
+        rm -f *.o *.a *.cm* *~ *.annot *.run *.opt $(ATDGEN_OUTFILES)

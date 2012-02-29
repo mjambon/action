@@ -1,0 +1,15 @@
+OCAMLPACKS = 
+OCAMLINCLUDES += ../datastruct
+OCAML_LIBS[] += ../datastruct/datastruct
+
+FILES[] =
+  prioqueue
+#  regiontree
+
+OCamlLibrary(regions, $(FILES))
+
+.DEFAULT: regions.cma regions.cmxa
+
+.PHONY: clean
+clean:
+	rm -f *.o *.a *.cm* *~ *.annot *.run *.opt

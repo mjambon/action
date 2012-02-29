@@ -1,0 +1,11 @@
+FILES[] =
+  picker
+  timer
+
+OCamlLibrary(datastruct, $(FILES))
+
+.DEFAULT: datastruct.cma datastruct.cmxa
+
+.PHONY: clean
+clean:
+	rm -f *.o *.a *.cm* *~ *.annot *.run *.opt
