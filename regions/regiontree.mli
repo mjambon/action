@@ -5,7 +5,6 @@ sig
   type element_contents
   type region_contents
 end
-
 module type Out =
 sig
   type element_contents
@@ -20,14 +19,14 @@ sig
   type t
   type elt
 
-  val create : region -> t
+  val create : 
+    diffusion_period: int ->
+    fraction_diffused: float ->
+    post_move: (region -> region -> elt -> unit) ->
+    region -> t
+
   val elt_contents : elt -> element_contents
 
-  val set_post_move : t -> (region -> region -> elt -> unit) -> unit
-    (** This registers a custom function to call after moving
-        an element from one region to another.
-        Any previously registered function is replaced. *)
-    
   val add_element : t -> region_id -> element_contents -> float -> elt
     (** Create an element and add it to the tree.
         Once added, an element cannot be removed from the tree. *)

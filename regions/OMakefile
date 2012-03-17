@@ -4,7 +4,7 @@ OCAML_LIBS[] += ../datastruct/datastruct
 
 FILES[] =
   prioqueue
-#  regiontree
+  regiontree
 
 OCamlLibrary(regions, $(FILES))
 
