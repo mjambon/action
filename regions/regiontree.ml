@@ -61,11 +61,15 @@ struct
   type node = {
     region : region;
     node_children : (node * node) option;
-    mutable prioqueue : elt Prioqueue.t;
-    mutable bottom : elt Prioqueue.t;
+    mutable up_queue : elt Prioqueue.t;
+    mutable left_queue : elt Prioqueue.t;
+    mutable right_queue : elt Prioqueue.t;
+    mutable bottom_queue : elt Prioqueue.t;
     mutable incoming : (region * elt) list;
     mutable up_remainder : float;
-    mutable down_remainder : float;
+    mutable left_remainder : float;
+    mutable right_remainder : float;
+    mutable region_element_count : int;
   }
 
   type t = {
@@ -112,7 +116,20 @@ struct
     }
 
   (* move top/bottom items to parent/child *)
-  let move_out root parent node = failwith "not implemented"
+  let move_out root parent node =
+    let base = root.fraction_diffused *. float node.region_element_count in
+
+    (* maximum number of elements to move out of each gate (up/left/right) *)
+    let up_quota = base +. node.up_remainder in
+    let left_quota = base +. node.left_remainder in
+    let right_quota = base +. node.right_remainder in
+
+    (* up *)
+    (match parent with
+         None -> ()
+       | Some p ->
+           ...
+    )
 
   (* put incoming into prioqueue *)
   let move_in root parent node = failwith "not implemented"
