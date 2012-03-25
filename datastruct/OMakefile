@@ -1,6 +1,7 @@
 FILES[] =
   picker
   timer
+  log
 
 OCamlLibrary(datastruct, $(FILES))
 

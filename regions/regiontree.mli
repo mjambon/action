@@ -5,6 +5,7 @@ sig
   type element_contents
   type region_contents
 end
+
 module type Out =
 sig
   type element_contents
@@ -27,16 +28,15 @@ sig
 
   val elt_contents : elt -> element_contents
 
-  val add_element : t -> region_id -> element_contents -> float -> elt
+  val add_element : t -> region_id -> float -> element_contents -> elt
     (** Create an element and add it to the tree.
         Once added, an element cannot be removed from the tree. *)
 
-  val update_score : elt -> float -> unit
-    (** Update the score of an element,
-        possibly moving it to another region. *)
+  val update_score : t -> elt -> float -> unit
+    (** Update the score of an element. *)
 
-  val iter_region : t -> region_id -> (elt -> unit) -> unit
-  val fold_region : region -> 'acc -> (elt -> 'acc -> 'acc) -> 'acc
+  val iter : t -> (region -> unit) -> unit
+  val fold : t -> 'acc -> (region -> 'acc -> 'acc) -> 'acc
 end
 
 module Make (Param : In) : Out
