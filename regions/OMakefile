@@ -7,8 +7,9 @@ FILES[] =
   regiontree
 
 OCamlLibrary(regions, $(FILES))
+OCamlProgram(test_regions, $(FILES) test_regions)
 
-.DEFAULT: regions.cma regions.cmxa
+.DEFAULT: regions.cma regions.cmxa test_regions.opt
 
 .PHONY: clean
 clean:

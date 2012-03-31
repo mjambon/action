@@ -27,6 +27,7 @@ sig
     region -> t
 
   val elt_contents : elt -> element_contents
+  val elt_score : elt -> float
 
   val add_element : t -> region_id -> float -> element_contents -> elt
     (** Create an element and add it to the tree.
@@ -42,3 +43,5 @@ end
 module Make (Param : In) : Out
   with type element_contents = Param.element_contents
   and type region_contents = Param.region_contents
+
+val test : unit -> unit

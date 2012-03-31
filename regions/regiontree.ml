@@ -30,6 +30,7 @@ sig
     region -> t
 
   val elt_contents : elt -> element_contents
+  val elt_score : elt -> float
 
   val add_element : t -> region_id -> float -> element_contents -> elt
     (** Create an element and add it to the tree.
@@ -91,6 +92,7 @@ struct
   }
 
   let elt_contents x = x.elt_contents
+  let elt_score x = x.elt_prio
 
   let rec map_region_to_node x =
     let node_children =
@@ -203,10 +205,14 @@ struct
             let acc, q =
               take_top p.incoming node.up_queue n
                 (fun prio x ->
+                   node.region_element_count <- node.region_element_count - 1;
+                   assert (node.region_element_count >= 0);
+
                    node.left_queue <-
                      Prioqueue.remove prio x.elt_id node.left_queue;
                    node.right_queue <-
                      Prioqueue.remove prio x.elt_id node.right_queue;
+
                    (node.region, x)
                 )
             in
@@ -224,6 +230,9 @@ struct
             let acc, q =
               take_bottom left.incoming node.left_queue n
                 (fun prio x ->
+                   node.region_element_count <- node.region_element_count - 1;
+                   assert (node.region_element_count >= 0);
+
                    node.up_queue <-
                      Prioqueue.remove prio x.elt_id node.up_queue;
                    node.right_queue <-
@@ -245,6 +254,9 @@ struct
             let acc, q =
               take_bottom right.incoming node.right_queue n
                 (fun prio x ->
+                   node.region_element_count <- node.region_element_count - 1;
+                   assert (node.region_element_count >= 0);
+
                    node.up_queue <-
                      Prioqueue.remove prio x.elt_id node.up_queue;
                    node.left_queue <-
@@ -255,10 +267,7 @@ struct
             right.incoming <- acc;
             node.right_queue <- q;
             node.right_remainder <- right_quota -. float n
-    end;
-
-    node.region_element_count <- node.region_element_count - 1;
-    assert (node.region_element_count >= 0)
+    end
 
   let add_element_to_region x =
     (* note: elt_region and elt_path must be already up-to-date *)
@@ -348,3 +357,107 @@ struct
     elt.elt_prio <- prio;
     add_element_to_region elt
 end
+
+let test () =
+  let module T = Make (
+    struct
+      type element_contents = int
+      type region_contents = (int, float) Hashtbl.t
+    end
+  )
+  in
+  let r000 = {
+    T.id = 3;
+    children = None;
+    data = Hashtbl.create 100;
+  }
+  in
+  let r001 = {
+    T.id = 4;
+    children = None;
+    data = Hashtbl.create 100;
+  }
+  in
+  let r010 = {
+    T.id = 5;
+    children = None;
+    data = Hashtbl.create 100;
+  }
+  in
+  let r011 = {
+    T.id = 6;
+    children = None;
+    data = Hashtbl.create 100;
+  }
+  in
+  let r00 = {
+    T.id = 1;
+    children = Some (r000, r001);
+    data = Hashtbl.create 100;
+  }
+  in
+  let r01 = {
+    T.id = 2;
+    children = Some (r010, r011);
+    data = Hashtbl.create 100;
+  }
+  in
+  let r0 = {
+    T.id = 0;
+    children = Some (r00, r01);
+    data = Hashtbl.create 100;
+  }
+  in
+  let remove region x =
+    let tbl = region.T.data in
+    assert (Hashtbl.mem tbl x);
+    Hashtbl.remove tbl x
+  in
+  let add region x score =
+    let tbl = region.T.data in
+    assert (not (Hashtbl.mem tbl x));
+    Hashtbl.add tbl x score
+  in
+  let post_move src dst elt =
+    let x = T.elt_contents elt in
+    let score = T.elt_score elt in
+    printf "elt:%i:%g src:%i -> dst:%i\n%!" x score src.T.id dst.T.id;
+    remove src x;
+    add dst x score
+  in
+
+  let t =
+    T.create
+      ~diffusion_period: 10
+      ~fraction_diffused: 0.05
+      ~post_move
+      r0
+  in
+  
+  for i = 1 to 1000 do
+    let region =
+      match i mod 4 with
+          0 -> r000
+        | 1 -> r001
+        | 2 -> r010
+        | 3 -> r011
+        | _ -> assert false
+    in
+    let score = mod_float (float i /. 10.) 1. in
+    printf "add elt:%i:%g\n%!" i score;
+    add region i score;
+    ignore (T.add_element t region.T.id score i)
+  done;
+
+  let all =
+    T.fold t [] (
+      fun r acc ->
+        let l = Hashtbl.fold (fun k v acc -> (k, v) :: acc) r.T.data [] in
+        let sum = List.fold_left (fun acc (_, x) -> acc +. x) 0. l in
+        let n = List.length l in
+        let mean = sum /. float n in
+        printf "region:%i n:%i mean:%g\n" r.T.id n mean;
+        acc @ l
+    )
+  in
+  assert (List.length all = 1000)
