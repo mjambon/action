@@ -10,6 +10,3 @@ SUBDIRS[] =
 
 .SUBDIRS: $(SUBDIRS)
 OCAMLINCLUDES = $(SUBDIRS)
-
-clean:
-        rm -f *.o *.a *.cm* *~ *.annot *.run *.opt

@@ -11,6 +11,11 @@ OCamlProgram(test_regions, $(FILES) test_regions)
 
 .DEFAULT: regions.cma regions.cmxa test_regions.opt
 
+.PHONY: test
+test: test_regions.opt
+	./test_regions.opt > test_regions.out
+
 .PHONY: clean
 clean:
 	rm -f *.o *.a *.cm* *~ *.annot *.run *.opt
+	rm -f test_regions.out
