@@ -361,8 +361,8 @@ end
 let test () =
   let module T = Make (
     struct
-      type element_contents = int
-      type region_contents = (int, float) Hashtbl.t
+      type element_contents = string
+      type region_contents = (string, float) Hashtbl.t
     end
   )
   in
@@ -421,7 +421,7 @@ let test () =
   let post_move src dst elt =
     let x = T.elt_contents elt in
     let score = T.elt_score elt in
-    printf "elt:%i:%g src:%i -> dst:%i\n%!" x score src.T.id dst.T.id;
+    printf "elt:%S:%g src:%i -> dst:%i\n%!" x score src.T.id dst.T.id;
     remove src x;
     add dst x score
   in
@@ -433,7 +433,32 @@ let test () =
       ~post_move
       r0
   in
+
+  let added = ref 0 in
   
+  let add region id score =
+    printf "add elt:%S:%g\n%!" id score;
+    add region id score;
+    ignore (T.add_element t region.T.id score id);
+    incr added
+  in    
+
+  add r0 "x-r0" 0.;
+  add r00 "x-r00" 0.;
+  add r01 "x-r01" 0.;
+  add r000 "x-r000" 0.;
+  add r001 "x-r001" 0.;
+  add r010 "x-r010" 0.;
+  add r011 "x-r011" 0.;
+
+  add r0 "y-r0" 1.;
+  add r00 "y-r00" 1.;
+  add r00 "y-r01" 1.;
+  add r000 "y-r000" 1.;
+  add r001 "y-r001" 1.;
+  add r010 "y-r010" 1.;
+  add r011 "y-r011" 1.;
+
   for i = 1 to 1000 do
     let region =
       match i mod 4 with
@@ -444,9 +469,31 @@ let test () =
         | _ -> assert false
     in
     let score = mod_float (float i /. 10.) 1. in
-    printf "add elt:%i:%g\n%!" i score;
-    add region i score;
-    ignore (T.add_element t region.T.id score i)
+    add region (string_of_int i) score
+  done;
+
+  for i = 1001 to 2000 do
+    let region =
+      match i mod 4 with
+          0 -> r000
+        | 1 -> r001
+        | 2 -> r010
+        | 3 -> r011
+        | _ -> assert false
+    in
+    add region (string_of_int i) (-1.)
+  done;
+
+  for i = 2001 to 3500 do
+    let region =
+      match i mod 4 with
+          0 -> r000
+        | 1 -> r001
+        | 2 -> r010
+        | 3 -> r011
+        | _ -> assert false
+    in
+    add region (string_of_int i) 2.
   done;
 
   let all =
@@ -460,4 +507,4 @@ let test () =
         acc @ l
     )
   in
-  assert (List.length all = 1000)
+  assert (List.length all = !added)
